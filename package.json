@@ -1,0 +1,16 @@
+{
+  "name": "reshak-parser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "playmean",
+  "license": "ISC",
+  "dependencies": {
+    "iconv-lite": "^0.4.24",
+    "jsdom": "^13.0.0",
+    "request": "^2.88.0"
+  }
+}
