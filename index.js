@@ -35,15 +35,26 @@ function fetch_menu() {
 			var class_name = menu_link.textContent.trim();
 
 			if (class_url != '/') {
-				fetch_books(`https://reshak.ru${class_url}`, data => {
-					class_list[class_name] = data;
-				});
+				class_list[class_name] = {};
+
+				fetch_books(`https://reshak.ru${class_url}`, function(data) {
+					var class_name = this;
+
+					for (var book_name in data) {
+						fetch_book(`https://reshak.ru${data[book_name]}`, function(data) {
+							class_list[class_name][this] = data;
+						}.bind(book_name));
+					}
+				}.bind(class_name));
 
 				break;
 			}
 		}
 
-		fs.writeFileSync('data.json', JSON.stringify(class_list));
+		setTimeout(() => {
+			fs.writeFileSync('data.json', JSON.stringify(class_list));
+		}, 15000);
+
 	});
 }
 
@@ -58,11 +69,8 @@ function fetch_books(url, success) {
 			var book_url = book_node.getAttribute('href');
 			var book_name = book_node.textContent.trim();
 
-			if (book_url.length > 0) {
-				fetch_book(`https://reshak.ru${book_url}`, data => {
-					book_list[book_name] = data;
-				});
-			}
+			if (book_url.length > 0)
+				book_list[book_name] = book_url;
 		}
 
 		success(book_list);
@@ -98,10 +106,10 @@ function fetch_book(url, success) {
 						if (child.nodeType == 3 && child.textContent.trim().length > 3) {
 							part_name = child.textContent.trim();
 
-							unit_list[unit_names[i].textContent][part_name] = [];
+							unit_list[unit_names[i].textContent][part_name] = {};
 						} else if (child.nodeType == 1) {
 							if (part_name && child.getAttribute('href'))
-								unit_list[unit_names[i].textContent][part_name].push(child.getAttribute('href'));
+								unit_list[unit_names[i].textContent][part_name][child.textContent] = child.getAttribute('href');
 						}
 					}
 				}
@@ -118,6 +126,8 @@ function fetch_book(url, success) {
 					task_list[task.textContent] = task.getAttribute('href');
 				}
 			}
+
+			// console.log(task_list);
 
 			return success(task_list);
 		}
