@@ -33,20 +33,17 @@ function fetch_menu() {
 		for (var menu_link of document.querySelector('.tablemenu').querySelectorAll('a')) {
 			var class_url = menu_link.getAttribute('href');
 			var class_name = menu_link.textContent.trim();
-
 			if (class_url != '/') {
 				class_list[class_name] = {};
-
 				fetch_books(`https://reshak.ru${class_url}`, function(data) {
 					var class_name = this;
-
+					console.log(class_name);
 					for (var book_name in data) {
 						fetch_book(`https://reshak.ru${data[book_name]}`, function(data) {
 							class_list[class_name][this] = data;
 						}.bind(book_name));
 					}
 				}.bind(class_name));
-
 				break;
 			}
 		}
