@@ -1,32 +1,34 @@
 const rp = require("request-promise").defaults({ encoding: 'latin1' });
 const cheerio = require('cheerio');
-const iconv = require("iconv-lite");
 
 
-
-function getMenu(url) {
+function getMenu(url, selector) {
     return new Promise(async (resolve, reject) => {
-        var options = {
+        let options = {
             headers: {
                 'pragma': 'no-cache',
                 'cache-control': 'no-cache',
                 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36',
-                'referer': 'https://reshak.ru/reshebniki/',
+                'referer': 'https://reshak.info/',
                 'Accept-Encoding': "*"
             },
             transform(body) {
-                return cheerio.load(iconv.encode(iconv.decode(new Buffer(body,'binary'),'win1251'),'utf8'))
+                return cheerio.load(body);
             },
         };
         options.uri = url;
         await rp(options)
             .then(($) => {
-               let hrefElemets= $('.tablemenu  a');
-               let href = [];
-               for (let i = 1; i<hrefElemets.length-1; i++){
-                   href.push(hrefElemets.eq(i).attr("href"))
+               let hrefElemets= $(selector);
+               let hrefs = [];
+               for (let i = 0; i<hrefElemets.length; i++){
+                   href = hrefElemets.eq(i).attr("href");
+                   if(href !== '/'){
+                       hrefs.push(href)
+                   }
                }
-
+               console.log(hrefs);
+                resolve(hrefs);
             })
             .catch((err) => {
                 console.log("возникла ошибка: ", err);
@@ -34,4 +36,5 @@ function getMenu(url) {
             });
     });
 }
-getMenu('https://reshak.ru');
+getMenu('https://reshak.info/', '.tablemenu  a');
+getMenu('https://reshak.info/tag/7klass_eng.html', '#pro6 a');
