@@ -57,6 +57,7 @@ async function createFoldersFromData(data,path='',level=0) {
         }
     }
 }
+
 createFoldersFromData(test_data['test_data'],'here/');
 
 //console.log(test_data);
