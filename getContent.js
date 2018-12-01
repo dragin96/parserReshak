@@ -2,6 +2,8 @@ const fs = require('fs');
 const rp = require("request-promise").defaults({ encoding: 'latin1' });
 const cheerio = require('cheerio');
 const iconv  = require('iconv-lite');
+const path = require('path');
+
 
 let headers = {
     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36',
@@ -14,26 +16,20 @@ let options = {
 
 function downloadImg (url, name) {
     return new Promise(async (resolve, reject) => {
-        options.url = url;
-        await rp(options)
-            .then((data) => {
-                let imagedata = data;
-                fs.writeFile(name, imagedata, 'binary', function(err){
-                    if (err) throw err
-                    console.log('File saved.');
-                    resolve(true);
-                })
-            })
-            .catch((err) => {
-                console.log("возникла ошибка: ", err);
-                reject();
-            });
+        let http = require('https');
+        let fs = require('fs');
+
+        let file = fs.createWriteStream(name);
+        let request = http.get(url, function(response) {
+            response.pipe(file);
+            resolve(true)
+        });
 
     })
 }
 
 
-//downloadImg('https://reshak.info/reshebniki/informatika/7/bosova/images1/1-2.png', '1-2');
+//downloadImg('https://reshak.info/reshebniki/informatika/7/bosova/images1/1-2.png', '1-2.jpg');
 
 function save_text(url, name){
     return new Promise(async (resolve, reject) => {
@@ -70,3 +66,31 @@ function save_text(url, name){
 
 
 //save_text('https://reshak.info/otvet/otvet_txt.php?otvet1=/rainbow7/images/Unit1/Step10/7', '7')
+
+function getImg(url) {
+    return new Promise(async (resolve, reject) => {
+        options.url = url;
+        options.transform = function(body){
+            body = iconv.encode(iconv.decode(new Buffer(body,'binary'),'win1251'),'utf8');
+            return cheerio.load(body);
+        };
+        await rp(options)
+            .then(($) => {
+                let elements = $(".maincontfull div");
+                for(var i = 0; i< elements.length-1; i++){
+                    let el = elements[i];
+                    elClass = $(el).attr('class');
+                    if (elClass === "ya-share2" || elClass === "ya-share2 ya-share2_inited" ) {
+                        break;
+                    }
+                    let srcImg = $(el).find("img").attr('src');
+                    if (typeof srcImg !== 'undefined' && $(el).find("img").attr('class') !== 'border'){
+                        console.log(`https://reshak.info${srcImg}`)
+                        downloadImg(`https://reshak.info${srcImg}`, path.posix.basename(srcImg));
+                    }
+                }
+            })
+    })
+}
+
+getImg("https://reshak.info/otvet/otvet_txt.php?otvet1=/spotlight8/images/module1/a/3");

@@ -25,7 +25,7 @@ function get_document(url, success) {
 }
 
 function fetch_menu() {
-	get_document('https://reshak.ru/', document => {
+	get_document('https://reshak.info/', document => {
 		console.log('get classes');
 
 		var class_list = {};
@@ -35,11 +35,11 @@ function fetch_menu() {
 			var class_name = menu_link.textContent.trim();
 			if (class_url != '/') {
 				class_list[class_name] = {};
-				fetch_books(`https://reshak.ru${class_url}`, function(data) {
+				fetch_books(`https://reshak.info${class_url}`, function(data) {
 					var class_name = this;
 					console.log(class_name);
 					for (var book_name in data) {
-						fetch_book(`https://reshak.ru${data[book_name]}`, function(data) {
+						fetch_book(`https://reshak.info${data[book_name]}`, function(data) {
 							class_list[class_name][this] = data;
 						}.bind(book_name));
 					}
